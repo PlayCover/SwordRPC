@@ -16,11 +16,11 @@ public extension SwordRPC {
     ///
     /// - Parameter presence: The presence to display.
     func setPresence(_ presence: RichPresence) {
-        self.currentPresence.send(presence)
+        currentPresence.send(presence)
     }
 
     func clearPresence() {
-        self.currentPresence.send(nil)
+        currentPresence.send(nil)
     }
 
     /// Sends a command to clear the current presence.
@@ -39,18 +39,18 @@ public extension SwordRPC {
         log.notice("Sending new presence now: \(String(describing: presence))")
 
         let command = Command(cmd: .setActivity, args: [
-            "pid": .int(Int(self.pid)),
+            "pid": .int(Int(pid)),
             "activity": .activity(presence),
         ])
 
-        try self.send(command)
+        try send(command)
     }
 
     internal func startPresenceUpdater() {
         log.notice("Starting presence updater.")
 
-        self.presenceUpdater = self.currentPresence.throttle(for: .seconds(3), scheduler: self.worker, latest: true ).sink { presence in
-            if let presence = presence {
+        presenceUpdater = currentPresence.throttle(for: .seconds(3), scheduler: worker, latest: true).sink { presence in
+            if let presence {
                 try? self.sendPresence(presence)
             } else {
                 self.sendEmptyPresence()

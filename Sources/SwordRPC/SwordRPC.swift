@@ -6,16 +6,14 @@
 //  Copyright © 2017 Alejandro Alonso. All rights reserved.
 //
 
+import Combine
 import Foundation
 import os.log
-import Combine
 
 public class SwordRPC {
     // MARK: App Info
 
     public let appId: String
-    public var handlerInterval: Int
-    public let autoRegister: Bool
 
     // MARK: Technical stuff
 
@@ -23,8 +21,6 @@ public class SwordRPC {
     var client: ConnectionClient?
     let worker: DispatchQueue
     var log: Logger
-    let encoder = JSONEncoder()
-    let decoder = JSONDecoder()
     let currentPresence = CurrentValueSubject<RichPresence?, Never>(nil)
     var presenceUpdater: AnyCancellable!
 
@@ -36,10 +32,8 @@ public class SwordRPC {
 
     public weak var delegate: SwordRPCDelegate?
 
-    public init(appId: String, handlerInterval: Int = 1000, autoRegister: Bool = true) {
+    public init(appId: String) {
         self.appId = appId
-        self.handlerInterval = handlerInterval
-        self.autoRegister = autoRegister
 
         pid = ProcessInfo.processInfo.processIdentifier
         log = Logger(subsystem: "space.joscomputing.swordrpc.\(pid)", category: "rpc")
@@ -47,9 +41,9 @@ public class SwordRPC {
             label: "space.joscomputing.swordrpc.\(pid)",
             qos: .userInitiated
         )
-        encoder.dateEncodingStrategy = .secondsSince1970
     }
 
+    /// Connects to a Discord client to serve RPC.
     public func connect() {
         let tempDir = FileManager.default.temporaryDirectory.path
 
@@ -81,12 +75,26 @@ public class SwordRPC {
         print("[SwordRPC] Discord not detected")
     }
 
+    /// Disconnects from the connected Discord client.
+    /// If SwordRPC is not currently connected, this performs nothing.
+    public func disconnect() {
+        // We only need to clean up if our client is present and connected.
+        guard let client else {
+            return
+        }
+
+        // Clear presence.
+        clearPresence()
+        client.close()
+        self.client = nil
+    }
+
     /// Replies to an activity join request.
     /// - Parameters:
     ///   - user: The user making the request
     ///   - reply: Whether to accept or decline the request.
     public func reply(to user: PartialUser, with reply: JoinReply) {
-        var type: CommandType
+        let type: CommandType
 
         switch reply {
         case .yes:

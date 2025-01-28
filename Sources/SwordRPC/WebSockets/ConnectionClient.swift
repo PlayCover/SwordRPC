@@ -21,6 +21,7 @@ class ConnectionClient: ChannelInboundHandler {
 
     /// Called upon a disconnect.
     var disconnectHandler: ((_ text: String) -> Void)?
+
     /// Called upon a text event.
     var textHandler: ((_ text: String) -> Void)?
 

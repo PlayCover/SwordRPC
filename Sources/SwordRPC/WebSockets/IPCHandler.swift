@@ -38,7 +38,7 @@ final class IPCInboundHandler: ByteToMessageDecoder {
         }
 
         let result = IPCPayload(opcode: opcode, payload: payload)
-        context.fireChannelRead(self.wrapInboundOut(result))
+        context.fireChannelRead(wrapInboundOut(result))
         buffer.moveReaderIndex(to: 8 + size)
         return .needMoreData
     }

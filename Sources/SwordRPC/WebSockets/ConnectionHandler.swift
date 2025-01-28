@@ -32,6 +32,17 @@ extension ConnectionClient {
     public func channelReadComplete(context: ChannelHandlerContext) {
         context.flush()
     }
+    
+    public func channelInactive(context: ChannelHandlerContext) {
+        // This likely means we've disconnected from Discord (e.g. client closed).
+        context.close(promise: nil)
+        
+        // TODO: Our disconnection handler expects
+        // valid JSON, so we'll give it an empty object.
+        //
+        // This should be rearchitectured to avoid such.
+        disconnectHandler?("{}")
+    }
 
     private func receivedClose(context: ChannelHandlerContext, frame: IPCPayload) {
         // We should have recieved data from this close, as Discord provides us with such.

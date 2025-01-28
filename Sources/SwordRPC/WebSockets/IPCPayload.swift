@@ -1,5 +1,5 @@
 //
-//  IPCHandler.swift
+//  IPCPayload.swift
 //  SwiftNIO
 //
 //  Created by Spotlight Deveaux on 2022-01-17.
